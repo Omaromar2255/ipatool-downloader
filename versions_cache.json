@@ -1,0 +1,116 @@
+{
+  "544007664_875034940": {
+    "displayVersion": "20.21.6",
+    "minOS": "15.0",
+    "bundleVersion": "20.21.6",
+    "externalId": "875034940"
+  },
+  "544007664_875214761": {
+    "displayVersion": "20.22.1",
+    "minOS": "16.0",
+    "bundleVersion": "20.22.1",
+    "externalId": "875214761"
+  },
+  "389801252_880733794": {
+    "displayVersion": "410.1.0",
+    "minOS": "15.1",
+    "bundleVersion": "849447290",
+    "externalId": "880733794"
+  },
+  "389801252_891367907": {
+    "displayVersion": "448.0.0",
+    "minOS": "16.4",
+    "bundleVersion": "891367907",
+    "externalId": "891367907"
+  },
+  "544007664_874967148": {
+    "displayVersion": "20.20.7",
+    "minOS": "15.0",
+    "bundleVersion": "20.20.7",
+    "externalId": "874967148"
+  },
+  "544007664_874849967": {
+    "displayVersion": "20.20.5",
+    "minOS": "15.0",
+    "bundleVersion": "20.20.5",
+    "externalId": "874849967"
+  },
+  "447188370_891816267": {
+    "displayVersion": "14.25.0",
+    "minOS": "15.0",
+    "bundleVersion": "14.25.0.48",
+    "externalId": "891816267"
+  },
+  "333903271_891970654": {
+    "displayVersion": "12.30",
+    "minOS": "15.0",
+    "bundleVersion": "19",
+    "externalId": "891970654"
+  },
+  "454638411_891415328": {
+    "displayVersion": "580.0.0",
+    "minOS": "15.1",
+    "bundleVersion": "1073972887",
+    "externalId": "891415328"
+  },
+  "535886823_891761134": {
+    "displayVersion": "154.8037.55",
+    "minOS": "18.0",
+    "bundleVersion": "154.0.8037.55",
+    "externalId": "891761134"
+  },
+  "535886823_870223627": {
+    "displayVersion": "131.6778.31",
+    "minOS": "16.0",
+    "bundleVersion": "131.0.6778.31",
+    "externalId": "870223627"
+  },
+  "535886823_865750297": {
+    "displayVersion": "125.6422.33",
+    "minOS": "15.0",
+    "bundleVersion": "125.0.6422.33",
+    "externalId": "865750297"
+  },
+  "535886823_867693685": {
+    "displayVersion": "127.6533.77",
+    "minOS": "16.0",
+    "bundleVersion": "127.0.6533.77",
+    "externalId": "867693685"
+  },
+  "535886823_866589114": {
+    "displayVersion": "126.6478.54",
+    "minOS": "16.0",
+    "bundleVersion": "126.0.6478.54",
+    "externalId": "866589114"
+  },
+  "535886823_866083143": {
+    "displayVersion": "125.6422.80",
+    "minOS": "15.0",
+    "bundleVersion": "125.0.6422.80",
+    "externalId": "866083143"
+  },
+  "535886823_866449820": {
+    "displayVersion": "126.6478.35",
+    "minOS": "16.0",
+    "bundleVersion": "126.0.6478.35",
+    "externalId": "866449820"
+  },
+  "535886823_866315278": {
+    "displayVersion": "125.6422.145",
+    "minOS": "15.0",
+    "bundleVersion": "125.0.6422.145",
+    "externalId": "866315278"
+  },
+  "835599320_891569625": {
+    "displayVersion": "47.0.0",
+    "minOS": "14.0",
+    "bundleVersion": "470044",
+    "externalId": "891569625"
+  },
+  "1500855883_891659721": {
+    "displayVersion": "19.6.0",
+    "minOS": "15.0",
+    "bundleVersion": "19.6.0.96",
+    "externalId": "891659721"
+  }
+}

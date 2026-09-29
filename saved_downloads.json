@@ -1,0 +1,93 @@
+[
+  {
+    "id": "com.lemon.lvoverseas_891659721",
+    "app_name": "CapCut: Photo & Video Editor",
+    "bundle_id": "com.lemon.lvoverseas",
+    "app_id": "1500855883",
+    "ext_id": "891659721",
+    "version": "19.6.0",
+    "min_os": "15.0",
+    "status": "في الانتظار ⏳",
+    "downloaded": false,
+    "file_path": "C:\\DRIVERS\\CapCut_Photo__Video_Editor_19.6.0.ipa",
+    "date_added": "2026-09-29 17:10"
+  },
+  {
+    "id": "com.zhiliaoapp.musically_891569625",
+    "app_name": "TikTok - Videos, Shop & LIVE",
+    "bundle_id": "com.zhiliaoapp.musically",
+    "app_id": "835599320",
+    "ext_id": "891569625",
+    "version": "47.0.0",
+    "min_os": "14.0",
+    "status": "في الانتظار ⏳",
+    "downloaded": false,
+    "file_path": "C:\\DRIVERS\\TikTok_-_Videos_Shop__LIVE_47.0.0.ipa",
+    "date_added": "2026-09-29 17:09"
+  },
+  {
+    "id": "com.google.chrome.ios_866083143",
+    "app_name": "Google Chrome",
+    "bundle_id": "com.google.chrome.ios",
+    "app_id": "535886823",
+    "ext_id": "866083143",
+    "version": "125.6422.80",
+    "min_os": "15.0",
+    "status": "في الانتظار ⏳",
+    "downloaded": false,
+    "file_path": "C:\\DRIVERS\\Google_Chrome_125.6422.80.ipa",
+    "date_added": "2026-09-29 17:03"
+  },
+  {
+    "id": "com.facebook.Messenger_891415328",
+    "app_name": "Messenger",
+    "bundle_id": "com.facebook.Messenger",
+    "app_id": "454638411",
+    "ext_id": "891415328",
+    "version": "580.0.0",
+    "min_os": "15.1",
+    "status": "في الانتظار ⏳",
+    "downloaded": false,
+    "file_path": "C:\\DRIVERS\\Messenger_580.0.0.ipa",
+    "date_added": "2026-09-29 03:27"
+  },
+  {
+    "id": "com.atebits.Tweetie2_891970654",
+    "app_name": "X",
+    "bundle_id": "com.atebits.Tweetie2",
+    "app_id": "333903271",
+    "ext_id": "891970654",
+    "version": "12.30",
+    "min_os": "15.0",
+    "status": "في الانتظار ⏳",
+    "downloaded": false,
+    "file_path": "C:\\DRIVERS\\X_12.30.ipa",
+    "date_added": "2026-09-29 03:26"
+  },
+  {
+    "id": "com.toyopagroup.picaboo_891816267",
+    "app_name": "Snapchat",
+    "bundle_id": "com.toyopagroup.picaboo",
+    "app_id": "447188370",
+    "ext_id": "891816267",
+    "version": "14.25.0",
+    "min_os": "15.0",
+    "status": "في الانتظار ⏳",
+    "downloaded": false,
+    "file_path": "C:\\DRIVERS\\Snapchat_14.25.0.ipa",
+    "date_added": "2026-09-29 03:24"
+  },
+  {
+    "id": "com.google.ios.youtube_875034940",
+    "app_name": "YouTube",
+    "bundle_id": "com.google.ios.youtube",
+    "app_id": "544007664",
+    "ext_id": "875034940",
+    "version": "20.21.6",
+    "min_os": "15.0",
+    "status": "في الانتظار ⏳",
+    "downloaded": false,
+    "file_path": "C:\\DRIVERS\\YouTube_20.21.6.ipa",
+    "date_added": "2026-09-29 03:23"
+  }
+]
