@@ -419,26 +419,76 @@ def perform_revoke(passphrase=None):
     except Exception as e:
         return False, str(e)
 
-def get_cookies():
+def get_active_dsid():
+    """استخراج رقم معرف الحساب (DSID) الفعلي الحالي ديناميكياً من ملف الكوكيز أو الجلسة"""
+    try:
+        if os.path.exists(COOKIE_PATH):
+            with open(COOKIE_PATH, 'r', encoding='utf-8') as f:
+                cookies = json.load(f)
+            for c in cookies:
+                if c.get('Name') == 'X-Dsid' and c.get('Value'):
+                    return str(c['Value']).strip()
+            for c in cookies:
+                name = c.get('Name', '')
+                if name.startswith('mz_at_ssl-') and '-' in name:
+                    parts = name.split('-', 1)
+                    if parts[1].isdigit():
+                        return parts[1].strip()
+    except Exception:
+        pass
+    return ""
+
+def get_itunes_pod():
+    """استخراج رقم مخدم iTunes Pod المناسب لحساب المستخدم (مثل p7 أو p52)"""
+    try:
+        if os.path.exists(COOKIE_PATH):
+            with open(COOKIE_PATH, 'r', encoding='utf-8') as f:
+                cookies = json.load(f)
+            for c in cookies:
+                if c.get('Name') == 'itspod' and c.get('Value'):
+                    return str(c['Value']).strip()
+    except Exception:
+        pass
+    return "7"
+
+def get_cookies(target_dsid=None):
     try:
         if not os.path.exists(COOKIE_PATH):
             return ""
+        if not target_dsid:
+            target_dsid = get_active_dsid()
+
         with open(COOKIE_PATH, 'r', encoding='utf-8') as f:
             cookies = json.load(f)
-        cookie_parts = [f"{c['Name']}={c['Value']}" for c in cookies if c.get('Value') and c.get('Name')]
+
+        cookie_parts = []
+        for c in cookies:
+            name = c.get('Name')
+            val = c.get('Value')
+            if not name or not val:
+                continue
+            # تصفية الكوكيز الخاصة بحسابات سابقة لتفادي تعارض جلسات أبل (mz_at_ssl-<DSID>)
+            if target_dsid and '-' in name:
+                parts = name.split('-')
+                if parts[-1].isdigit() and parts[-1] != target_dsid:
+                    continue
+            cookie_parts.append(f"{name}={val}")
         return '; '.join(cookie_parts)
     except Exception:
         return ""
 
 def get_apple_headers():
-    dsid = '20912319274'
-    return {
+    dsid = get_active_dsid()
+    cookies_str = get_cookies(dsid)
+    headers = {
         'Content-Type': 'application/x-apple-plist',
-        'iCloud-DSID': dsid,
-        'X-Dsid': dsid,
         'User-Agent': 'Configurator/2.17 (Macintosh; OS X 15.2; 24C5089c) AppleWebKit/0620.1.16.11.6',
-        'Cookie': get_cookies()
+        'Cookie': cookies_str
     }
+    if dsid:
+        headers['iCloud-DSID'] = str(dsid)
+        headers['X-Dsid'] = str(dsid)
+    return headers
 
 def generate_download_cmd(bundle_id, ext_id, app_name="", version=""):
     clean_name = "".join(c for c in app_name if c.isalnum() or c in (' ', '_', '-')).strip().replace(" ", "_")
@@ -545,25 +595,101 @@ def get_latest_ext_id(app_id, country='us'):
         pass
     return None, ''
 
-def get_all_version_ids(app_id, latest_ext_id):
-    payload = {
-        'creditDisplay': '',
-        'guid': MAC,
-        'salableAdamId': int(app_id),
-        'serialNumber': '0',
-        'appExtVrsId': str(latest_ext_id)
-    }
+def get_all_version_ids(app_id, latest_ext_id, return_error=False, log_callback=None):
+    """
+    جلب قائمة جميع المعرفات التاريخية لإصدارات التطبيق من خوادم أبل.
+    يحاول أولاً الاتصال المباشر بنقطة updateProduct، ثم يستعين بـ ipatool list-versions كبديل.
+    """
+    last_error = ""
+    versions = []
+
+    # 1. المحاولة المباشرة عبر downloaddispatch updateProduct
     try:
+        payload = {
+            'creditDisplay': '',
+            'guid': MAC,
+            'salableAdamId': int(app_id),
+            'serialNumber': '0',
+            'appExtVrsId': str(latest_ext_id)
+        }
         plist_bytes = plistlib.dumps(payload, fmt=plistlib.FMT_XML)
         url = f'https://downloaddispatch.itunes.apple.com/up/updateProduct?guid={MAC}'
         headers = get_apple_headers()
         resp = session.post(url, data=plist_bytes, headers=headers, timeout=20)
-        res = plistlib.loads(resp.content)
-        items = res.get('songList', [])
-        if items:
-            return items[0].get('metadata', {}).get('softwareVersionExternalIdentifiers', [])
+
+        if resp.status_code == 200:
+            res = plistlib.loads(resp.content)
+            items = res.get('songList', [])
+            if items:
+                v_ids = items[0].get('metadata', {}).get('softwareVersionExternalIdentifiers', [])
+                if v_ids:
+                    return (v_ids, "") if return_error else v_ids
+            elif res.get('customerMessage'):
+                last_error = f"خوادم أبل: {res.get('customerMessage')}"
+        elif resp.status_code == 403:
+            last_error = "رفضت خوادم أبل الطلب (HTTP 403 Forbidden). يلزم التأكد من قبول شروط أبل الجديدة (Terms & Conditions) عبر جهاز أبل أو فحص حالة الحساب."
+        elif resp.status_code in (401, 407):
+            last_error = "جلسة الحساب غير مصرحة أو منتهية الصلاحية (يرجى إعادة تسجيل الدخول في تبويب الحساب)."
+        else:
+            last_error = f"استجابة غير متوقعة من خوادم أبل: كود {resp.status_code}"
+    except requests.exceptions.Timeout:
+        last_error = "انتهت مهلة الاتصال بخوادم أبل (Timeout)."
+    except requests.exceptions.RequestException as e:
+        last_error = f"تعذر الاتصال بالخادم: {str(e)}"
+    except Exception as e:
+        last_error = f"خطأ في معالجة استجابة أبل: {str(e)}"
+
+    # 2. المحاولة البديلة عبر أداة ipatool list-versions
+    try:
+        passphrase = get_keychain_passphrase()
+        cmd = [
+            IPATOOL_PATH,
+            'list-versions',
+            '--app-id', str(app_id),
+            '--keychain-passphrase', passphrase,
+            '--format', 'json',
+            '--non-interactive'
+        ]
+        startupinfo = None
+        if os.name == 'nt':
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = subprocess.SW_HIDE
+
+        proc = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='replace',
+            startupinfo=startupinfo,
+            timeout=30
+        )
+        stdout = proc.stdout.strip()
+        for line in stdout.splitlines():
+            line = line.strip()
+            if line.startswith('{') and line.endswith('}'):
+                try:
+                    data = json.loads(line)
+                    if data.get('versions'):
+                        v_ids = data['versions']
+                        return (v_ids, "") if return_error else v_ids
+                    if data.get('error'):
+                        err = data.get('error')
+                        if '403' in err:
+                            last_error = "خوادم أبل ترفض جلب الإصدارات (HTTP 403): شروط أبل الجديدة معلقة على الحساب أو يتطلب إتمام بيانات الحساب على جهاز أبل."
+                        else:
+                            last_error = translate_apple_error(err)
+                except Exception:
+                    pass
     except Exception:
         pass
+
+    if log_callback and last_error:
+        log_callback(last_error)
+
+    if return_error:
+        return ([], last_error)
     return []
 
 class BufferedRemoteZipReader(io.RawIOBase):
@@ -659,6 +785,51 @@ def get_version_info(app_id, external_version_id, retries=2):
         except Exception:
             time.sleep(1)
             continue
+
+    # محاولة إضافية عبر أداة ipatool get-version-metadata في حال تعذر القراءة المباشرة
+    try:
+        passphrase = get_keychain_passphrase()
+        cmd = [
+            IPATOOL_PATH,
+            'get-version-metadata',
+            '--app-id', str(app_id),
+            '--external-version-id', str(external_version_id),
+            '--keychain-passphrase', passphrase,
+            '--format', 'json',
+            '--non-interactive'
+        ]
+        startupinfo = None
+        if os.name == 'nt':
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = subprocess.SW_HIDE
+
+        proc = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='replace',
+            startupinfo=startupinfo,
+            timeout=25
+        )
+        for line in proc.stdout.strip().splitlines():
+            line = line.strip()
+            if line.startswith('{') and line.endswith('}'):
+                data = json.loads(line)
+                disp_v = data.get('version') or data.get('bundleVersion')
+                if disp_v:
+                    info = {
+                        'displayVersion': disp_v,
+                        'minOS': data.get('minimumOsVersion', '?'),
+                        'bundleVersion': data.get('bundleVersion', ''),
+                        'externalId': str(external_version_id)
+                    }
+                    set_cached_version(app_id, external_version_id, info)
+                    return info
+    except Exception:
+        pass
+
     return None
 
 def download_ipa(bundle_id, ext_id, output_path, progress_callback=None):

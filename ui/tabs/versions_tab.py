@@ -152,10 +152,11 @@ class VersionsTab:
         app_id = self.app.current_app['app_id']
         latest_ext_id = self.app.current_latest_ext_id
 
-        versions = get_all_version_ids(app_id, latest_ext_id)
+        versions, err_msg = get_all_version_ids(app_id, latest_ext_id, return_error=True)
 
         if not versions:
-            self.app.log("لم يتم العثور على إصدارات أو حدث خطأ في الاتصال.")
+            msg = f"> لم يتم العثور على إصدارات: {err_msg}" if err_msg else "> لم يتم العثور على إصدارات أو حدث خطأ في الاتصال بخوادم أبل."
+            self.app.log(msg)
             self.app.root.after(0, lambda: self.btn_load_versions.config(state=tk.NORMAL))
             return
 
