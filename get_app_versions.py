@@ -75,7 +75,13 @@ def main():
 
     cookie_parts = [f"{c['Name']}={c['Value']}" for c in cookies if c.get('Value') and c.get('Name')]
     cookie_header = '; '.join(cookie_parts)
-    dsid = '20912319274'
+    dsid = None
+    for c in cookies:
+        if c.get('Name') == 'X-Dsid' and c.get('Value'):
+            dsid = str(c.get('Value'))
+            break
+    if not dsid:
+        dsid = '18672625286'
 
     payload = {
         'creditDisplay': '',

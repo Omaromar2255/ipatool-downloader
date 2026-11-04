@@ -16,7 +16,7 @@ for c in cookies:
         cookie_parts.append(f"{name}={val}")
 
 cookie_header = '; '.join(cookie_parts)
-dsid = '20912319274'
+dsid = next((str(c.get('Value')) for c in cookies if c.get('Name') == 'X-Dsid' and c.get('Value')), '18672625286')
 
 payload = {
     'creditDisplay': '',

@@ -29,8 +29,17 @@ def find_ipatool_executable():
 
 IPATOOL_PATH = find_ipatool_executable()
 
+import uuid
+
+def get_guid():
+    try:
+        node = uuid.getnode()
+        return '%012X' % node
+    except Exception:
+        return '94659C755502'
+
 # --- User-level Apple Tool Directories (~/.ipatool) ---
-MAC = '94659C755502'
+MAC = get_guid()
 IPATOOL_DIR = os.path.expanduser(r'~\\.ipatool')
 COOKIE_PATH = os.path.join(IPATOOL_DIR, 'cookies')
 ACCOUNT_PATH = os.path.join(IPATOOL_DIR, 'account')

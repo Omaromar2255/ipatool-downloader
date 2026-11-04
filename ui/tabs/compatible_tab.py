@@ -93,9 +93,11 @@ class CompatibleTab:
         versions = self.app.current_versions
         if not versions:
             self.app.log("جاري جلب قائمة الإصدارات أولاً...")
-            versions = get_all_version_ids(app_id, self.app.current_latest_ext_id)
+            versions, err_msg = get_all_version_ids(app_id, self.app.current_latest_ext_id, return_error=True)
             if versions:
                 self.app.current_versions = versions
+            elif err_msg:
+                self.app.log(f"> {err_msg}")
 
         if not versions:
             self.app.root.after(0, lambda: self.lbl_search_result.config(text="فشل جلب قائمة الإصدارات من خادم أبل."))
