@@ -1,11 +1,35 @@
 import os
 import json
 import threading
-from .config import CACHE_FILE
+from .config import CACHE_FILE, PURCHASES_CACHE_FILE
 
 # --- Thread-Safe Cache ---
 cache_lock = threading.Lock()
 VERSIONS_CACHE = {}
+PURCHASES_CACHE = []
+
+def load_purchases_cache():
+    global PURCHASES_CACHE
+    with cache_lock:
+        if os.path.exists(PURCHASES_CACHE_FILE):
+            try:
+                with open(PURCHASES_CACHE_FILE, 'r', encoding='utf-8') as f:
+                    PURCHASES_CACHE = json.load(f)
+            except Exception:
+                PURCHASES_CACHE = []
+        else:
+            PURCHASES_CACHE = []
+    return list(PURCHASES_CACHE)
+
+def save_purchases_cache(purchases_list):
+    global PURCHASES_CACHE
+    with cache_lock:
+        PURCHASES_CACHE = list(purchases_list)
+        try:
+            with open(PURCHASES_CACHE_FILE, 'w', encoding='utf-8') as f:
+                json.dump(purchases_list, f, ensure_ascii=False, indent=2)
+        except Exception:
+            pass
 
 def load_cache():
     global VERSIONS_CACHE

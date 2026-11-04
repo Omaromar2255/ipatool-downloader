@@ -70,6 +70,13 @@ class QueueTab:
         )
         self.btn_queue_refresh.pack(side=tk.LEFT, padx=8, pady=6)
 
+        self.btn_open_downloads = ttk.Button(
+            top_bar,
+            text="فتح مجلد التحميلات 📂",
+            command=self.on_open_downloads_folder
+        )
+        self.btn_open_downloads.pack(side=tk.LEFT, padx=5, pady=6)
+
         self.lbl_queue_stats = ttk.Label(
             top_bar,
             text="",
@@ -112,6 +119,8 @@ class QueueTab:
         self.queue_ctx_menu.add_separator()
         self.queue_ctx_menu.add_command(label="حذف من القائمة 🗑️", command=self.on_queue_delete_selected)
         self.queue_ctx_menu.add_command(label="مسح المكتمل فقط 🧹", command=self.on_queue_clear_completed)
+        self.queue_ctx_menu.add_separator()
+        self.queue_ctx_menu.add_command(label="فتح مجلد التحميلات 📂", command=self.on_open_downloads_folder)
 
         self.queue_tree.bind("<Button-3>", self.show_queue_context_menu)
 
@@ -240,6 +249,13 @@ class QueueTab:
         self.app.log(f"بدء تحميل قائمة التنزيل لـ {len(items_to_download)} تطبيق...")
         self.app.run_in_thread(self._queue_worker, items_to_download)
 
+    def on_open_downloads_folder(self):
+        d = get_download_dir()
+        try:
+            os.startfile(d)
+        except Exception as e:
+            messagebox.showerror("خطأ", f"تعذر فتح مجلد التحميلات: {str(e)}")
+
     def _queue_worker(self, items_to_download):
         for index, item in enumerate(items_to_download):
             if self.queue_cancel_requested:
@@ -251,12 +267,12 @@ class QueueTab:
             ext_id = item['ext_id']
             bundle_id = item['bundle_id']
             ver_str = item.get('version', '')
-            out_path = item.get('file_path')
 
-            if not out_path:
-                clean_name = "".join(c for c in app_name if c.isalnum() or c in (' ', '_', '-')).strip().replace(" ", "_")
-                ver_suffix = f"_{ver_str}" if ver_str and ver_str != "?" else f"_{ext_id}"
-                out_path = os.path.join(get_download_dir(), f"{clean_name}{ver_suffix}.ipa")
+            clean_name = "".join(c for c in app_name if c.isalnum() or c in (' ', '_', '-')).strip().replace(" ", "_")
+            if not clean_name:
+                clean_name = bundle_id
+            ver_suffix = f"_{ver_str}" if ver_str and ver_str != "?" else f"_{ext_id}"
+            out_path = os.path.join(get_download_dir(), f"{clean_name}{ver_suffix}.ipa")
 
             self.app.log(f"\n--- [{index + 1}/{len(items_to_download)}] بدء تحميل {app_name} (إصدار {ver_str}) ---")
 

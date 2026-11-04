@@ -5,8 +5,11 @@ from core.config import get_download_dir
 from core.apple_api import search_app, get_latest_ext_id, generate_download_cmd
 from core.queue_manager import add_to_saved_queue
 from core.utils import setup_entry_clipboard, format_size
+from core.image_loader import load_app_icon_async, get_placeholder_photo
 from .styles import COLORS, setup_styles
+from .search_dialog import SearchResultsDialog
 from .tabs.quick_tab import QuickTab
+from .tabs.purchased_tab import PurchasedTab
 from .tabs.versions_tab import VersionsTab
 from .tabs.compatible_tab import CompatibleTab
 from .tabs.queue_tab import QueueTab
@@ -68,16 +71,30 @@ class IPAManagerApp:
         self.info_card = ttk.Frame(self.middle_frame, style="Alt.TFrame")
         self.info_card.pack(fill=tk.X, pady=(0, 8))
 
-        self.lbl_app_name = ttk.Label(self.info_card, text="", style="Title.TLabel", anchor='e')
-        self.lbl_app_name.pack(fill=tk.X, padx=15, pady=(8, 2))
+        self.info_content_frame = tk.Frame(self.info_card, bg=self.alt_bg)
+        self.info_content_frame.pack(fill=tk.X, padx=15, pady=(10, 6))
+
+        # App Icon Label on the right (RTL layout)
+        self.lbl_app_icon = tk.Label(self.info_content_frame, bg=self.alt_bg)
+        self.lbl_app_icon.pack(side=tk.RIGHT, padx=(15, 0))
+        self._initial_app_icon = get_placeholder_photo(size=(64, 64), radius=14)
+        self.lbl_app_icon.config(image=self._initial_app_icon)
+        self.lbl_app_icon.image = self._initial_app_icon
+
+        # Text Frame beside Icon
+        self.info_text_frame = tk.Frame(self.info_content_frame, bg=self.alt_bg)
+        self.info_text_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        self.lbl_app_name = ttk.Label(self.info_text_frame, text="", style="Title.TLabel", anchor='e')
+        self.lbl_app_name.pack(fill=tk.X, pady=(0, 2))
 
         self.lbl_app_details = ttk.Label(
-            self.info_card,
+            self.info_text_frame,
             text="يرجى كتابة اسم التطبيق والضغط على بحث (يدعم النسخ واللصق الكامل)",
             anchor='e',
             justify='right'
         )
-        self.lbl_app_details.pack(fill=tk.X, padx=15, pady=(0, 4))
+        self.lbl_app_details.pack(fill=tk.X, pady=(0, 4))
 
         # Quick action buttons for loaded app
         self.info_btn_frame = ttk.Frame(self.info_card, style="Alt.TFrame")
@@ -105,6 +122,7 @@ class IPAManagerApp:
 
         # Instantiate Tabs
         self.quick_tab = QuickTab(self, self.notebook)
+        self.purchased_tab = PurchasedTab(self, self.notebook)
         self.versions_tab = VersionsTab(self, self.notebook)
         self.compatible_tab = CompatibleTab(self, self.notebook)
         self.queue_tab = QueueTab(self, self.notebook)
@@ -142,7 +160,8 @@ class IPAManagerApp:
         console_header.pack(fill=tk.X)
 
         ttk.Label(console_header, text="سجل العمليات:", style="Header.TLabel").pack(side=tk.RIGHT)
-        ttk.Button(console_header, text="مسح السجل", command=lambda: self.console.delete(1.0, tk.END)).pack(side=tk.LEFT)
+        ttk.Button(console_header, text="مسح السجل 🗑️", command=self.clear_console_logs).pack(side=tk.LEFT)
+        ttk.Button(console_header, text="نسخ السجلات 📋", command=self.copy_console_logs).pack(side=tk.LEFT, padx=(0, 6))
 
         self.console = scrolledtext.ScrolledText(
             bottom_frame,
@@ -153,9 +172,96 @@ class IPAManagerApp:
             font=("Consolas", 9)
         )
         self.console.pack(fill=tk.X, pady=(4, 0))
-        self.console.bind("<Key>", lambda e: "break")
+        self._setup_console_context_menu()
 
     # --- Clipboard & Utilities ---
+
+    def _setup_console_context_menu(self):
+        menu = tk.Menu(self.root, tearoff=0, bg=self.alt_bg, fg=self.fg_color)
+        menu.add_command(label="نسخ السجلات (Copy All)", command=self.copy_all_logs)
+        menu.add_command(label="نسخ المحدد (Copy Selection)", command=self.copy_selected_logs)
+        menu.add_separator()
+        menu.add_command(label="تحديد الكل (Select All)", command=self.select_all_logs)
+        menu.add_command(label="مسح السجل (Clear)", command=self.clear_console_logs)
+
+        def show_popup(event):
+            try:
+                menu.post(event.x_root, event.y_root)
+            except Exception:
+                pass
+
+        self.console.bind("<Button-3>", show_popup)
+
+        def on_key(event):
+            # Allow Ctrl+C (keycode 67 / keysym 'c'/'C')
+            if (event.state & 0x4 or event.state & 0x20000) and (event.keysym.lower() == 'c' or event.keycode == 67):
+                self.copy_console_logs()
+                return "break"
+            # Allow Ctrl+A (keycode 65 / keysym 'a'/'A')
+            if (event.state & 0x4 or event.state & 0x20000) and (event.keysym.lower() == 'a' or event.keycode == 65):
+                self.select_all_logs()
+                return "break"
+            # Allow navigation keys
+            if event.keysym in ('Up', 'Down', 'Left', 'Right', 'Prior', 'Next', 'Home', 'End'):
+                return None
+            # Block modifications
+            return "break"
+
+        self.console.bind("<Key>", on_key)
+
+    def copy_console_logs(self):
+        """نسخ النص المحدد إن وجد، وإلا نسخ كامل السجلات."""
+        try:
+            content = self.console.get(tk.SEL_FIRST, tk.SEL_LAST)
+        except tk.TclError:
+            content = None
+
+        if not content:
+            content = self.console.get("1.0", tk.END).strip()
+
+        if not content:
+            messagebox.showinfo("نسخ السجلات", "سجل العمليات فارغ حالياً.")
+            return
+
+        self.root.clipboard_clear()
+        self.root.clipboard_append(content)
+        self.root.update()
+        self.log("📋 تم نسخ السجلات إلى الحافظة بنجاح.")
+
+    def copy_all_logs(self):
+        content = self.console.get("1.0", tk.END).strip()
+        if not content:
+            messagebox.showinfo("نسخ السجلات", "سجل العمليات فارغ حالياً.")
+            return
+
+        self.root.clipboard_clear()
+        self.root.clipboard_append(content)
+        self.root.update()
+        self.log("📋 تم نسخ كامل السجلات إلى الحافظة بنجاح.")
+
+    def copy_selected_logs(self):
+        try:
+            content = self.console.get(tk.SEL_FIRST, tk.SEL_LAST)
+        except tk.TclError:
+            content = None
+
+        if not content:
+            messagebox.showinfo("نسخ السجلات", "لم تقم بتحديد أي نص من السجل.")
+            return
+
+        self.root.clipboard_clear()
+        self.root.clipboard_append(content)
+        self.root.update()
+        self.log("📋 تم نسخ النص المحدد إلى الحافظة بنجاح.")
+
+    def select_all_logs(self):
+        self.console.tag_add(tk.SEL, "1.0", tk.END)
+        self.console.mark_set(tk.INSERT, "1.0")
+        self.console.see(tk.INSERT)
+        return "break"
+
+    def clear_console_logs(self):
+        self.console.delete("1.0", tk.END)
 
     def copy_text_to_clipboard(self, text, message="تم نسخ النص إلى الحافظة!"):
         self.root.clipboard_clear()
@@ -189,60 +295,32 @@ class IPAManagerApp:
             results = search_app(query)
             if not results:
                 self.root.after(0, lambda: self.log("لم يتم العثور على نتائج."))
-                self.root.after(0, lambda: messagebox.showinfo("بحث", "لم يتم العثور على التطبيق."))
+                self.root.after(0, lambda: messagebox.showinfo("بحث", "لم يتم العثور على أي تطبيق يطابق البحث."))
                 return
 
-            if isinstance(results, list):
-                self.log(f"تم العثور على {len(results)} نتيجة.")
-                self._search_results = results
-                self.root.after(0, self._show_results_dialog)
-                return
-            else:
-                app = results
+            if not isinstance(results, list):
+                results = [results]
 
-            self._select_app(app)
+            self.log(f"تم العثور على {len(results)} نتيجة.")
+            self._search_results = results
+            self.root.after(0, lambda: self._show_results_dialog(query))
 
         except Exception as e:
             self.log(f"خطأ أثناء البحث: {str(e)}")
         finally:
             self.root.after(0, lambda: self.btn_search.config(state=tk.NORMAL))
 
-    def _show_results_dialog(self):
-        dialog = tk.Toplevel(self.root)
-        dialog.title("اختر التطبيق")
-        dialog.geometry("520x360")
-        dialog.configure(bg=self.bg_color)
-        dialog.transient(self.root)
-        dialog.grab_set()
+    def _show_results_dialog(self, query=""):
+        if not self._search_results:
+            return
 
-        ttk.Label(dialog, text="تم العثور على عدة نتائج، اختر التطبيق:", style="Header.TLabel").pack(padx=15, pady=12, anchor='e')
-
-        listbox = tk.Listbox(
-            dialog,
-            bg=self.alt_bg,
-            fg=self.fg_color,
-            font=("Segoe UI", 10),
-            selectbackground=self.accent_color,
-            selectforeground=self.bg_color,
-            borderwidth=0,
-            highlightthickness=0
+        SearchResultsDialog(
+            parent=self.root,
+            results=self._search_results,
+            query=query or self.entry_search.get().strip(),
+            on_select_callback=lambda app: self.run_in_thread(self._select_app, app),
+            colors=COLORS
         )
-        listbox.pack(fill=tk.BOTH, expand=True, padx=15, pady=(0, 10))
-
-        for r in self._search_results:
-            listbox.insert(tk.END, f"{r['name']} — {r['bundle_id']} ({r['seller']})")
-
-        if self._search_results:
-            listbox.select_set(0)
-
-        def on_select():
-            sel = listbox.curselection()
-            if sel:
-                app = self._search_results[sel[0]]
-                dialog.destroy()
-                self.run_in_thread(self._select_app, app)
-
-        ttk.Button(dialog, text="اختيار هذا التطبيق ✅", command=on_select, style="Accent.TButton").pack(pady=(0, 15))
 
     def _select_app(self, app):
         self.current_app = app
@@ -251,7 +329,7 @@ class IPAManagerApp:
         ext_id, display_ver = get_latest_ext_id(app['app_id'])
         self.current_latest_ext_id = ext_id
 
-        if display_ver and not app['current_version']:
+        if display_ver and not app.get('current_version'):
             app['current_version'] = display_ver
 
         self.root.after(0, self._update_app_info)
@@ -259,16 +337,33 @@ class IPAManagerApp:
 
     def _update_app_info(self):
         app = self.current_app
-        size_fmt = format_size(app['size'])
-        self.lbl_app_name.config(text=app['name'])
+        size_fmt = format_size(app.get('size', 0))
+        self.lbl_app_name.config(text=app.get('name', ''))
 
         details = (
-            f"Bundle ID: {app['bundle_id']}   |   App ID: {app['app_id']}\n"
-            f"المطور: {app['seller']}   |   أحدث إصدار: {app['current_version']} (معرف: {self.current_latest_ext_id})\n"
-            f"الحجم: {size_fmt}   |   السعر: {app['price']}"
+            f"Bundle ID: {app.get('bundle_id')}   |   App ID: {app.get('app_id')}\n"
+            f"المطور: {app.get('seller')}   |   أحدث إصدار: {app.get('current_version')} (معرف: {self.current_latest_ext_id})\n"
+            f"الحجم: {size_fmt}   |   السعر: {app.get('price')}"
         )
         self.lbl_app_details.config(text=details)
         self.info_btn_frame.pack(fill=tk.X, padx=15, pady=(0, 8))
+
+        # Update app icon with 64x64 rounded icon
+        icon_url = app.get('icon_url', '')
+        def on_icon_ready(photo):
+            if self.lbl_app_icon.winfo_exists():
+                self.lbl_app_icon.config(image=photo)
+                self.lbl_app_icon.image = photo
+
+        loaded_photo = load_app_icon_async(
+            icon_url,
+            self.root,
+            size=(64, 64),
+            radius=14,
+            on_loaded_callback=on_icon_ready
+        )
+        self.lbl_app_icon.config(image=loaded_photo)
+        self.lbl_app_icon.image = loaded_photo
 
         # Reset tabs
         self.versions_tab.clear()

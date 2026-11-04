@@ -112,5 +112,101 @@
     "minOS": "15.0",
     "bundleVersion": "19.6.0.96",
     "externalId": "891659721"
+  },
+  "389801252_13108827": {
+    "displayVersion": "3.4.1",
+    "minOS": "4.3",
+    "bundleVersion": "95467",
+    "externalId": "13108827"
+  },
+  "389801252_821227902": {
+    "displayVersion": "10.12.0",
+    "minOS": "8.0",
+    "bundleVersion": "52044838",
+    "externalId": "821227902"
+  },
+  "389801252_830347795": {
+    "displayVersion": "82.0",
+    "minOS": "10.0",
+    "bundleVersion": "143293442",
+    "externalId": "830347795"
+  },
+  "389801252_831213406": {
+    "displayVersion": "93.0",
+    "minOS": "10.0",
+    "bundleVersion": "153868846",
+    "externalId": "831213406"
+  },
+  "389801252_832266212": {
+    "displayVersion": "106.0",
+    "minOS": "10.0",
+    "bundleVersion": "166752244",
+    "externalId": "832266212"
+  },
+  "389801252_835921135": {
+    "displayVersion": "142.0",
+    "minOS": "11.0",
+    "bundleVersion": "214888322",
+    "externalId": "835921135"
+  },
+  "389801252_834353066": {
+    "displayVersion": "125.0",
+    "minOS": "11.0",
+    "bundleVersion": "193828684",
+    "externalId": "834353066"
+  },
+  "389801252_833676216": {
+    "displayVersion": "121.0",
+    "minOS": "11.0",
+    "bundleVersion": "184731909",
+    "externalId": "833676216"
+  },
+  "389801252_832709542": {
+    "displayVersion": "111.0",
+    "minOS": "10.0",
+    "bundleVersion": "172467877",
+    "externalId": "832709542"
+  },
+  "389801252_832986604": {
+    "displayVersion": "114.0",
+    "minOS": "11.0",
+    "bundleVersion": "176133011",
+    "externalId": "832986604"
+  },
+  "389801252_832796853": {
+    "displayVersion": "112.0",
+    "minOS": "10.0",
+    "bundleVersion": "173391461",
+    "externalId": "832796853"
+  },
+  "389801252_832888376": {
+    "displayVersion": "113.0",
+    "minOS": "10.0",
+    "bundleVersion": "174653610",
+    "externalId": "832888376"
+  },
+  "389801252_878956563": {
+    "displayVersion": "403.0.0",
+    "minOS": "15.1",
+    "bundleVersion": "808786605",
+    "externalId": "878956563"
+  },
+  "389801252_873338220": {
+    "displayVersion": "372.2.0",
+    "minOS": "15.1",
+    "bundleVersion": "710671000",
+    "externalId": "873338220"
+  },
+  "389801252_862753591": {
+    "displayVersion": "314.0.6",
+    "minOS": "15.0",
+    "bundleVersion": "555508374",
+    "externalId": "862753591"
+  },
+  "389801252_855368094": {
+    "displayVersion": "274.0",
+    "minOS": "13.4",
+    "bundleVersion": "455531335",
+    "externalId": "855368094"
   }
 }

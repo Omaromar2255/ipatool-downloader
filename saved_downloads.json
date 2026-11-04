@@ -1,5 +1,18 @@
 [
   {
+    "id": "com.burbn.instagram_894403128",
+    "app_name": "Instagram",
+    "bundle_id": "com.burbn.instagram",
+    "app_id": "389801252",
+    "ext_id": "894403128",
+    "version": "454.1",
+    "min_os": "?",
+    "status": "في الانتظار ⏳",
+    "downloaded": false,
+    "file_path": "C:\\Users\\pc5\\Documents\\GitHub\\ipatool-downloader\\downloads\\Instagram_454.1.ipa",
+    "date_added": "2026-11-04 11:08"
+  },
+  {
     "id": "com.lemon.lvoverseas_891659721",
     "app_name": "CapCut: Photo & Video Editor",
     "bundle_id": "com.lemon.lvoverseas",
@@ -9,7 +22,7 @@
     "min_os": "15.0",
     "status": "في الانتظار ⏳",
     "downloaded": false,
-    "file_path": "C:\\Users\\pc5\\Documents\\GitHub\\ipatool-downloader\\CapCut_Photo__Video_Editor_19.6.0.ipa",
+    "file_path": "downloads\\CapCut_Photo__Video_Editor_19.6.0.ipa",
     "date_added": "2026-09-29 17:10"
   },
   {
@@ -20,9 +33,9 @@
     "ext_id": "891569625",
     "version": "47.0.0",
     "min_os": "14.0",
-    "status": "في الانتظار ⏳",
+    "status": "فشل التحميل ❌",
     "downloaded": false,
-    "file_path": "C:\\Users\\pc5\\Documents\\GitHub\\ipatool-downloader\\TikTok_-_Videos_Shop__LIVE_47.0.0.ipa",
+    "file_path": "downloads\\TikTok_-_Videos_Shop__LIVE_47.0.0.ipa",
     "date_added": "2026-09-29 17:09"
   },
   {
@@ -35,7 +48,7 @@
     "min_os": "15.0",
     "status": "في الانتظار ⏳",
     "downloaded": false,
-    "file_path": "C:\\Users\\pc5\\Documents\\GitHub\\ipatool-downloader\\Google_Chrome_125.6422.80.ipa",
+    "file_path": "downloads\\Google_Chrome_125.6422.80.ipa",
     "date_added": "2026-09-29 17:03"
   },
   {
@@ -48,7 +61,7 @@
     "min_os": "15.1",
     "status": "في الانتظار ⏳",
     "downloaded": false,
-    "file_path": "C:\\Users\\pc5\\Documents\\GitHub\\ipatool-downloader\\Messenger_580.0.0.ipa",
+    "file_path": "downloads\\Messenger_580.0.0.ipa",
     "date_added": "2026-09-29 03:27"
   },
   {
@@ -61,7 +74,7 @@
     "min_os": "15.0",
     "status": "في الانتظار ⏳",
     "downloaded": false,
-    "file_path": "C:\\Users\\pc5\\Documents\\GitHub\\ipatool-downloader\\X_12.30.ipa",
+    "file_path": "downloads\\X_12.30.ipa",
     "date_added": "2026-09-29 03:26"
   },
   {
@@ -74,7 +87,7 @@
     "min_os": "15.0",
     "status": "في الانتظار ⏳",
     "downloaded": false,
-    "file_path": "C:\\Users\\pc5\\Documents\\GitHub\\ipatool-downloader\\Snapchat_14.25.0.ipa",
+    "file_path": "downloads\\Snapchat_14.25.0.ipa",
     "date_added": "2026-09-29 03:24"
   },
   {
@@ -87,7 +100,7 @@
     "min_os": "15.0",
     "status": "في الانتظار ⏳",
     "downloaded": false,
-    "file_path": "C:\\Users\\pc5\\Documents\\GitHub\\ipatool-downloader\\YouTube_20.21.6.ipa",
+    "file_path": "downloads\\YouTube_20.21.6.ipa",
     "date_added": "2026-09-29 03:23"
   }
 ]

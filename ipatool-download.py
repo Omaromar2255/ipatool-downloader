@@ -81,10 +81,15 @@ def main():
         print(f"[!] Could not find app or external version ID for '{query}'.")
         return
 
+    downloads_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloads")
+    os.makedirs(downloads_dir, exist_ok=True)
+
     if not output_name:
         # Default filename based on app name
         clean_name = "".join(c for c in app_name if c.isalnum() or c in (' ', '_', '-')).strip()
-        output_name = f"{clean_name}.ipa"
+        output_name = os.path.join(downloads_dir, f"{clean_name}.ipa")
+    elif not os.path.isabs(output_name):
+        output_name = os.path.join(downloads_dir, output_name)
 
     print(f"[+] Found App: {app_name}")
     print(f"    Bundle ID: {bundle_id}")

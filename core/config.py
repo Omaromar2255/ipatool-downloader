@@ -10,6 +10,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SETTINGS_FILE = os.path.join(BASE_DIR, 'settings.json')
 CACHE_FILE = os.path.join(BASE_DIR, 'versions_cache.json')
 SAVED_QUEUE_FILE = os.path.join(BASE_DIR, 'saved_downloads.json')
+PURCHASES_CACHE_FILE = os.path.join(BASE_DIR, 'purchases_cache.json')
+DEFAULT_DOWNLOAD_DIR = os.path.join(BASE_DIR, 'downloads')
 
 def find_ipatool_executable():
     # 1. Search in BASE_DIR for known executable names
@@ -36,15 +38,16 @@ ACCOUNT_PATH = os.path.join(IPATOOL_DIR, 'account')
 def load_settings():
     defaults = {
         'keychain_passphrase': '2211',
-        'download_dir': BASE_DIR
+        'download_dir': DEFAULT_DOWNLOAD_DIR
     }
     if os.path.exists(SETTINGS_FILE):
         try:
             with open(SETTINGS_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                # If old hardcoded path C:\DRIVERS was saved, migrate it to current BASE_DIR
-                if data.get('download_dir') in [r'C:\DRIVERS', 'C:/DRIVERS', r'C:\DRIVERS\\']:
-                    data['download_dir'] = BASE_DIR
+                saved_dir = data.get('download_dir')
+                # If old hardcoded path C:\DRIVERS or BASE_DIR itself was saved, migrate it to DEFAULT_DOWNLOAD_DIR
+                if not saved_dir or saved_dir in [r'C:\DRIVERS', 'C:/DRIVERS', r'C:\DRIVERS\\', BASE_DIR]:
+                    data['download_dir'] = DEFAULT_DOWNLOAD_DIR
                 defaults.update(data)
         except Exception:
             pass
@@ -63,7 +66,26 @@ def get_keychain_passphrase():
     return SETTINGS.get('keychain_passphrase', '2211')
 
 def get_download_dir():
-    d = SETTINGS.get('download_dir', BASE_DIR)
-    if not d or not os.path.exists(d):
-        return BASE_DIR
+    d = SETTINGS.get('download_dir')
+    if not d or d == BASE_DIR:
+        d = DEFAULT_DOWNLOAD_DIR
+    elif not os.path.isabs(d):
+        d = os.path.normpath(os.path.join(BASE_DIR, d))
+    try:
+        os.makedirs(d, exist_ok=True)
+    except Exception:
+        pass
     return d
+
+def set_download_dir(path):
+    if not path or path == BASE_DIR:
+        path = DEFAULT_DOWNLOAD_DIR
+    elif not os.path.isabs(path):
+        path = os.path.normpath(os.path.join(BASE_DIR, path))
+    try:
+        os.makedirs(path, exist_ok=True)
+    except Exception:
+        pass
+    SETTINGS['download_dir'] = path
+    save_settings(SETTINGS)
+    return path

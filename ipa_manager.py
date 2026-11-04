@@ -39,6 +39,10 @@ from core.queue_manager import (
 )
 from core.apple_api import (
     session,
+    validate_email_format,
+    translate_apple_error,
+    reencrypt_account_keychain,
+    InteractiveLoginSession,
     check_auth_status,
     perform_login,
     perform_revoke,
@@ -50,7 +54,9 @@ from core.apple_api import (
     get_all_version_ids,
     BufferedRemoteZipReader,
     get_version_info,
-    download_ipa
+    download_ipa,
+    get_account_purchases,
+    purchase_license
 )
 from core.utils import (
     parse_os,
@@ -58,6 +64,12 @@ from core.utils import (
     format_size,
     setup_entry_clipboard
 )
+from core.image_loader import (
+    load_app_icon_async,
+    get_placeholder_photo,
+    make_rounded_icon
+)
+from ui.tabs.purchased_tab import PurchasedTab
 from ui.main_window import IPAManagerApp
 
 def main():

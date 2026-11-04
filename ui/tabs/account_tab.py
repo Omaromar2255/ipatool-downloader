@@ -1,14 +1,17 @@
 import os
 import subprocess
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
 from core.config import (
     BASE_DIR,
     IPATOOL_DIR,
     IPATOOL_PATH,
     SETTINGS,
     get_keychain_passphrase,
-    save_settings
+    save_settings,
+    get_download_dir,
+    set_download_dir,
+    DEFAULT_DOWNLOAD_DIR
 )
 from core.apple_api import check_auth_status, perform_login, perform_revoke
 from core.utils import setup_entry_clipboard
@@ -75,6 +78,59 @@ class AccountTab:
 
         self.btn_logout = ttk.Button(status_btns, text="تسجيل الخروج 🚪", command=self.on_logout, style="Danger.TButton")
         self.btn_logout.pack(side=tk.RIGHT, padx=5)
+
+        # =========================================================
+        # Card 1.5: Download Directory Settings
+        # =========================================================
+        card_download = ttk.Frame(scroll_content, style="Alt.TFrame")
+        card_download.pack(fill=tk.X, padx=15, pady=(0, 12))
+
+        ttk.Label(
+            card_download,
+            text="مجلد حفظ وتنزيل التطبيقات (Downloads Folder) 📥",
+            style="Title.TLabel",
+            anchor='e'
+        ).pack(fill=tk.X, padx=15, pady=(12, 6))
+
+        self.lbl_download_dir_path = ttk.Label(
+            card_download,
+            text=f"📁 المسار: {get_download_dir()}",
+            font=("Segoe UI", 9, "bold"),
+            anchor='e'
+        )
+        self.lbl_download_dir_path.pack(fill=tk.X, padx=15, pady=3)
+
+        ttk.Label(
+            card_download,
+            text="يتم تحميل جميع ملفات الـ IPA تلقائياً إلى هذا المجلد، وهو مستثنى تماماً من رفعه إلى GitHub مع مجلد الكاش (.cache).",
+            style="Sub.TLabel",
+            justify='right',
+            anchor='e'
+        ).pack(fill=tk.X, padx=15, pady=(2, 8))
+
+        dl_btns = ttk.Frame(card_download, style="Alt.TFrame")
+        dl_btns.pack(fill=tk.X, padx=15, pady=(0, 12))
+
+        self.btn_open_downloads = ttk.Button(
+            dl_btns,
+            text="فتح مجلد التحميلات 📂",
+            command=self.on_open_downloads_folder
+        )
+        self.btn_open_downloads.pack(side=tk.RIGHT, padx=5)
+
+        self.btn_change_downloads = ttk.Button(
+            dl_btns,
+            text="تغيير المجلد 📁",
+            command=self.on_change_downloads_folder
+        )
+        self.btn_change_downloads.pack(side=tk.RIGHT, padx=5)
+
+        self.btn_reset_downloads = ttk.Button(
+            dl_btns,
+            text="استعادة الافتراضي 🔄",
+            command=self.on_reset_downloads_folder
+        )
+        self.btn_reset_downloads.pack(side=tk.RIGHT, padx=5)
 
         # =========================================================
         # Card 2: Interactive CMD Login (Recommended)
@@ -237,6 +293,31 @@ class AccountTab:
                 self.app.log("الحساب غير متصل حالياً.")
 
         self.app.root.after(0, update)
+
+    def on_open_downloads_folder(self):
+        d = get_download_dir()
+        try:
+            os.startfile(d)
+            self.app.log(f"تم فتح مجلد التحميلات: {d}")
+        except Exception as e:
+            messagebox.showerror("خطأ", f"تعذر فتح مجلد التحميلات: {str(e)}")
+
+    def on_change_downloads_folder(self):
+        chosen = filedialog.askdirectory(
+            title="اختر مجلد حفظ التطبيقات (IPA)",
+            initialdir=get_download_dir()
+        )
+        if chosen:
+            new_path = set_download_dir(chosen)
+            self.lbl_download_dir_path.config(text=f"📁 المسار: {new_path}")
+            self.app.log(f"تم تغيير مسار حفظ التطبيقات إلى: {new_path}")
+            messagebox.showinfo("تم التغيير", f"تم اعتماد مجلد التنزيل الجديد:\n{new_path}")
+
+    def on_reset_downloads_folder(self):
+        new_path = set_download_dir(DEFAULT_DOWNLOAD_DIR)
+        self.lbl_download_dir_path.config(text=f"📁 المسار: {new_path}")
+        self.app.log(f"تمت استعادة مجلد التنزيل الافتراضي: {new_path}")
+        messagebox.showinfo("تمت الاستعادة", f"تمت استعادة مجلد التنزيل الافتراضي بنجاح:\n{new_path}")
 
     def on_open_storage_folder(self):
         try:
